@@ -1,0 +1,338 @@
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 1.5rem;
+      }
+      #app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        user-select: none;
+      }
+      .object {
+        position: relative;
+        width: 3rem;
+        display: flex;
+        justify-content: center;
+      }
+      .button {
+        position: absolute;
+        top: 2rem;
+        height: 2rem;
+        width: 3rem;
+        border: 1px solid;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 45%;
+      }
+      .price {
+        position: absolute;
+        top: 4rem;
+        height: 2rem;
+        width: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.75rem;
+      }
+      .upgrade {
+        font-size: 1rem;
+        text-align: center;
+        border: 1px solid;
+        margin-top: 1px;
+        width: 100%;
+      }
+      .upgradePrice {
+        font-size: 0.75rem;
+      }
+      #points {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+      }
+      #counter {
+        display: flex;
+        justify-content: center;
+      }
+      #click {
+        display: flex;
+        justify-content: center;
+        border: 1px solid;
+        border-radius: 50%;
+        width: 4.2rem;
+      }
+
+      #result {
+        word-break: break-all;
+        display: flex;
+        justify-content: left;
+        width: 9rem;
+        padding-left: 1rem;
+      }
+      #timer {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+      }
+      #upgradePanel {
+        position: absolute;
+        top: 0;
+        left: 80vw;
+        background-color: lightgray;
+        width: 20vw;
+        height: 100vh;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body scroll="no" style="overflow: hidden">
+    <div id="app">
+      <div id="timer"></div>
+      <div id="points">
+        <div id="click">+</div>
+        <div id="pointsText">Points:</div>
+        <div id="counter">0</div>
+      </div>
+      <div class="operator">(</div>
+      <div class="operator">(</div>
+      <div class="object">
+        <div class="mathEl" id="first"></div>
+        <div class="button"></div>
+        <div class="price"></div>
+      </div>
+      <div class="operator">+</div>
+      <div class="object">
+        <div class="mathEl" id="second"></div>
+        <div class="button"></div>
+        <div class="price"></div>
+      </div>
+      <div class="operator">)</div>
+      <div class="operator">*</div>
+      <div class="object">
+        <div class="mathEl" id="third"></div>
+        <div class="button"></div>
+        <div class="price"></div>
+      </div>
+      <div class="operator">)</div>
+      <div class="operator">**</div>
+      <div class="object">
+        <div class="mathEl" id="third"></div>
+        <div class="button"></div>
+        <div class="price"></div>
+      </div>
+      <div class="operator">=</div>
+      <div class="object" id="result">...</div>
+      <div id="upgradePanel">
+        Upgrades:
+        <div class="upgrade">
+          Click Power
+          <div class="upgradePrice"></div>
+        </div>
+        <div class="upgrade">
+          Timer
+          <div class="upgradePrice"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      class Counter {
+        constructor() {
+          this.element = document.getElementById("counter");
+          this.value = 0;
+        }
+
+        addValue(value) {
+          this.value += value;
+          this.render();
+        }
+
+        subValue(value) {
+          this.value -= value;
+          this.render();
+        }
+
+        render() {
+          this.element.textContent = this.value;
+        }
+      }
+
+      const counter = new Counter();
+
+      const result = document.getElementById("result");
+      const timer = document.getElementById("timer");
+      const mathElements = document.getElementsByClassName("mathEl");
+      const buttons = document.getElementsByClassName("button");
+      const click = document.getElementById("click");
+      const prices = document.getElementsByClassName("price");
+      const upgrades = document.getElementsByClassName("upgrade");
+      const upgradePrices = document.getElementsByClassName("upgradePrice");
+
+      const upgradesValues = [
+        [
+          { price: 30, value: 2 },
+          { price: 500, value: 3 },
+          { price: 1000, value: 8 },
+          { price: 1500, value: 16 },
+          { price: 10000, value: 25 },
+          { price: 100000, value: 1000 },
+          { price: 9999999999999999, value: 10000000000000000 }
+        ],
+        [
+          { price: 100, value: 4.5 },
+          { price: 500, value: 4.0 },
+          { price: 1000, value: 3.5 },
+          { price: 5000, value: 3.0 },
+          { price: 100000, value: 2.5 },
+          { price: 500000, value: 2.0 },
+          { price: 1000000, value: 1.5 },
+          { price: 99999999999999999, value: 1.0 }
+        ]
+      ];
+
+      const mathEls = [
+        {
+          value: 0,
+          startPrice: 1,
+          price: 1,
+          biggerprice: 1,
+          addValue: 1
+        },
+        {
+          value: 0,
+          startPrice: 10,
+          price: 10,
+          biggerprice: 1.1,
+          addValue: 5
+        },
+        {
+          value: 1,
+          startPrice: 50,
+          price: 50,
+          biggerprice: 1.5,
+          addValue: 0.5
+        },
+        {
+          value: 1,
+          startPrice: 300,
+          price: 300,
+          biggerprice: 2,
+          addValue: 0.25
+        }
+      ];
+
+      for (let i = 0; buttons.length > i; i++) {
+        buttons[i].innerHTML = "<div style='font-size: 2rem'>+</div>";
+        prices[i].innerText = mathEls[i].price;
+      }
+
+      let afterclick;
+      click.value = 1;
+      click.addEventListener("click", () => {
+        clearTimeout(afterclick);
+        counter.addValue(click.value);
+        click.style.backgroundColor = "green";
+        afterclick = setTimeout(() => {
+          click.style.backgroundColor = "";
+        }, 200);
+      });
+
+      mathEls.forEach((mathEl, i) => {
+        buttons[i].addEventListener("click", () => {
+          if (counter.value < mathEl.price) {
+            buttons[i].style.backgroundColor = "red";
+            setTimeout(() => {
+              buttons[i].style.backgroundColor = "";
+            }, 300);
+            return;
+          }
+          buttons[i].style.backgroundColor = "green";
+          setTimeout(() => {
+            buttons[i].style.backgroundColor = "";
+          }, 300);
+          counter.subValue(mathEl.price);
+          mathElements[i].textContent =
+            parseFloat(mathElements[i].textContent) + mathEl.addValue;
+          result.innerText = countResult();
+          mathEl.price = Math.ceil(
+            (mathEl.price + mathEl.startPrice) * mathEl.biggerprice
+          );
+          prices[i].innerText = mathEls[i].price;
+        });
+        mathElements[i].textContent = mathEl.value;
+      });
+
+      function countResult() {
+        return parseInt(
+          (parseFloat(mathElements[0].innerText) +
+            parseFloat(mathElements[1].innerText)) *
+            parseFloat(mathElements[2].innerText) **
+              parseFloat(mathElements[3].innerText)
+        );
+      }
+
+      upgradePrices[0].innerText = upgradesValues[0][0].price;
+      let lvl0 = 0;
+      upgrades[0].addEventListener("click", () => {
+        if (counter.value < upgradesValues[0][lvl0].price) {
+          upgrades[0].style.backgroundColor = "red";
+          setTimeout(() => {
+            upgrades[0].style.backgroundColor = "";
+          }, 300);
+          return;
+        }
+        upgrades[0].style.backgroundColor = "green";
+        setTimeout(() => {
+          upgrades[0].style.backgroundColor = "";
+        }, 300);
+        counter.subValue(upgradesValues[0][lvl0].price);
+        click.value = upgradesValues[0][lvl0].value;
+        lvl0++;
+        upgradePrices[0].innerText = upgradesValues[0][lvl0].price;
+      });
+
+      upgradePrices[1].innerText = upgradesValues[1][0].price;
+      let lvl1 = 0;
+      upgrades[1].addEventListener("click", () => {
+        if (counter.value < upgradesValues[1][lvl1].price) {
+          upgrades[1].style.backgroundColor = "red";
+          setTimeout(() => {
+            upgrades[1].style.backgroundColor = "";
+          }, 300);
+          return;
+        }
+        upgrades[1].style.backgroundColor = "green";
+        setTimeout(() => {
+          upgrades[1].style.backgroundColor = "";
+        }, 300);
+        counter.subValue(upgradesValues[1][lvl1].price);
+        timer.startValue = upgradesValues[1][lvl1].value;
+        lvl1++;
+        upgradePrices[1].innerText = upgradesValues[1][lvl1].price;
+      });
+
+      timer.startValue = 5;
+      timer.value = timer.startValue;
+      timer.innerText = timer.startValue.toFixed(1);
+      setInterval(() => {
+        timer.innerText = timer.value.toFixed(1);
+        timer.value -= 0.1;
+        if (timer.value < 0) {
+          timer.value = timer.startValue;
+          counter.addValue(countResult());
+        }
+      }, 100);
+    </script>
+  </body>
+</html>
